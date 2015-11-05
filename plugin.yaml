@@ -148,6 +148,49 @@ node_types:
       cloudify.interfaces.validation:
         creation: aws.ec2.keypair.creation_validation
 
+  cloudify.aws.nodes.Volume:
+    derived_from: cloudify.nodes.Volume
+    properties:
+      size:
+        description: >
+          The size in GiB of the volume to create in AWS.
+        type: integer
+      volume_type:
+        description: >
+          The type of the volume. Valid values are 'standard | io1 | gp2'.
+        type: string
+        default: 'standard'
+      persistent:
+        description: >
+          Indicates if the volume should be persistent (ie. will be deleted at undeploy).
+        type: boolean
+        default: true
+      device:
+        description: >
+          The device where the disk will be mounted (/dev/sda1, G:/, etc.).
+        type: string
+      use_external_resource:
+        description: >
+          Indicate whether the resource exists or if Cloudify should create the resource.
+        type: boolean
+        default: false
+      resource_id:
+        description: >
+          Either the name or ID of the resource in Cloudify. If this is an existing
+          resource, you should provide the name or the ID of the resource in Amazon AWS.
+        type: string
+        default: ''
+      aws_config:
+        description: >
+          A dictionary of values to pass to authenticate with the AWS API.
+        default: {}
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: aws.ec2.volume.create
+        delete: aws.ec2.volume.delete
+      cloudify.interfaces.validation:
+        creation: aws.ec2.elasticip.creation_validation
+
 relationships:
   cloudify.aws.relationships.instance_connected_to_elastic_ip:
     derived_from: cloudify.relationships.connected_to
@@ -155,6 +198,13 @@ relationships:
       cloudify.interfaces.relationship_lifecycle:
         establish: aws.ec2.elasticip.associate
         unlink: aws.ec2.elasticip.disassociate
+
+  cloudify.aws.relationships.volume_attached_to_instance:
+    derived_from: cloudify.relationships.connected_to
+    target_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        establish: aws.ec2.volume.attach
+        unlink: aws.ec2.volume.detach
 
   cloudify.aws.relationships.instance_connected_to_keypair:
     derived_from: cloudify.relationships.connected_to

@@ -1,4 +1,4 @@
-########
+﻿########
 # Copyright (c) 2015 GigaSpaces Technologies Ltd. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,9 +47,19 @@ SECURITY_GROUP_REQUIRED_PROPERTIES = ['description', 'rules']
 # keypair module constants
 KEYPAIR_REQUIRED_PROPERTIES = ['private_key_path']
 
+# volume module constants
+VOLUME_REQUIRED_PROPERTIES = ['size', 'volume_type', 'persistent', 'device']
+
 # config
 AWS_CONFIG_PROPERTY = 'aws_config'
 AWS_DEFAULT_CONFIG_PATH = '~/.boto'
 EXTERNAL_RESOURCE_ID = 'aws_resource_id'
 NODE_INSTANCE = 'node-instance'
 RELATIONSHIP_INSTANCE = 'relationship-instance'
+AWS_CONFIG_PATH_ENV_VAR_NAME = "AWS_CONFIG_PATH"
+
+# Boto config schema (section > options)
+BOTO_CONFIG_SCHEMA = {
+    'Credentials': ['aws_access_key_id', 'aws_secret_access_key'],
+    'Boto': ['ec2_region_name', 'ec2_region_endpoint']
+}
