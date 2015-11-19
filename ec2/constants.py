@@ -48,7 +48,7 @@ SECURITY_GROUP_REQUIRED_PROPERTIES = ['description', 'rules']
 KEYPAIR_REQUIRED_PROPERTIES = ['private_key_path']
 
 # volume module constants
-VOLUME_REQUIRED_PROPERTIES = ['size', 'volume_type', 'persistent', 'device']
+VOLUME_REQUIRED_PROPERTIES = ['size', 'volume_type', 'device']
 
 # config
 AWS_CONFIG_PROPERTY = 'aws_config'
