@@ -57,6 +57,10 @@ def create(**_):
     
     ec2_client = connection.EC2ConnectionClient().client()
 
+        # Set device runtime property
+    ctx.instance.runtime_properties['device'] = \
+        ctx.node.properties['device']
+
     if _create_external_volume():
         return
 
@@ -79,9 +83,6 @@ def create(**_):
             boto.exception.BotoServerError) as e:
         raise NonRecoverableError('{0}'.format(str(e)))
 
-    # Set device runtime property
-    ctx.instance.runtime_properties['device'] = \
-        ctx.node.properties['device']
     utils.set_external_resource_id(
         volume_object.id, ctx.instance, external=False)
 
