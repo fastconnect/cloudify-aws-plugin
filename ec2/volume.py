@@ -97,10 +97,6 @@ def delete(**_):
     if _delete_external_volume():
         return
 
-    # Do not delete the volume if the user does not want to
-    if ctx.node.properties['persistent']:
-        return
-
     volume_object = _get_volume_object_by_id(volume)
 
     if not volume_object:

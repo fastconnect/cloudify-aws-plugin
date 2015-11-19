@@ -160,11 +160,6 @@ node_types:
           The type of the volume. Valid values are 'standard | io1 | gp2'.
         type: string
         default: 'standard'
-      persistent:
-        description: >
-          Indicates if the volume should be persistent (ie. will be deleted at undeploy).
-        type: boolean
-        default: true
       device:
         description: >
           The device where the disk will be mounted (/dev/sda1, G:/, etc.).
