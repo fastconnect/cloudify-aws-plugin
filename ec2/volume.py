@@ -170,14 +170,6 @@ def attach(**_):
         'Attached volume {0} with instance {1}.'
         .format(volume, instance_id))
 
-    if 'volumes' not in ctx.target.instance.runtime_properties:
-        ctx.logger.info('Creation volumes property for instance')
-        ctx.target.instance.runtime_properties['volumes'] = []
-    else:
-        ctx.logger.info('Adding volume in volumes property for instance')
-
-    ctx.target.instance.runtime_properties['volumes'].append(volume)
-
 
 @operation
 def detach(**_):
@@ -265,7 +257,7 @@ def _attach_external_volume_or_instance(volume):
     ctx.logger.info(
         'Either instance or volume is an external resource so not '
         'performing associate operation.')
-    ctx.target.instance.runtime_properties['volumes'].append(volume)
+
     return True
 
 
@@ -302,7 +294,6 @@ def _detach_external_volume_or_instance():
     ctx.logger.info(
         'Either instance or volume is an external resource so not '
         'performing detach operation.')
-    ctx.target.instance.runtime_properties['volumes'].remove(volume)
 
     return True
 
