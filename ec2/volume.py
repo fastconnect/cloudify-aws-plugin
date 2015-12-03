@@ -23,6 +23,8 @@ from ec2 import connection
 from cloudify import ctx
 from cloudify.exceptions import NonRecoverableError
 from cloudify.decorators import operation
+from fabric.api import env, run
+from time import sleep
 
 
 @operation
@@ -169,6 +171,10 @@ def attach(**_):
     ctx.logger.info(
         'Attached volume {0} with instance {1}.'
         .format(volume, instance_id))
+
+    device = _get_device_name()
+
+    ctx.source.instance.runtime_properties['device'] = device
 
 
 @operation
@@ -331,3 +337,33 @@ def _get_all_volumes(volume=None):
         raise NonRecoverableError('{0}'.format(str(e)))
 
     return volumes
+
+def _get_device_name():
+    """Returns the real device name on the machine
+    """
+    sleep(30)
+    agent = ctx.provider_context['cloudify']['cloudify_agent']
+    env.host_string = ctx.target.instance.runtime_properties['ip']
+    env.user = agent['user']
+    env.key_filename = agent['agent_key_path']
+    env.port = agent['remote_execution_port']
+    
+    devices = run("sudo lsblk -o KNAME")
+
+    devices = devices.split('\r\n')
+    devices.pop(0)
+
+    ctx.logger.info('Available on {}: {}'.format(env.host_string, devices))
+
+    aws_device = ctx.source.instance.runtime_properties['device']
+
+    for device in devices:
+        if device[-1:] == aws_device[-1:]:
+            ctx.logger.info('{} matches {}.'.format(aws_device, device))
+            return '/dev/{}'.format(device)
+
+    raise NonRecoverableError(
+        'Unable to match {} with an existing device on the machine.'.format(
+                                                                    aws_device
+                                                                    )
+        )
