@@ -161,7 +161,7 @@ def attach(**_):
             device=ctx.source.instance.runtime_properties['device'])
     except boto.exception.EC2ResponseError as e:
         if 'available' in e.message:
-            ctx.operation.retry(
+            return ctx.operation.retry(
                 message='Volume not available. Retrying...')
         else:
             raise NonRecoverableError('{0}'.format(str(e)))
@@ -340,6 +340,8 @@ def _get_all_volumes(volume=None):
 
 def _get_device_name():
     """Returns the real device name on the machine
+    TODO: change sleep to wait attachment
+    TODO: Manage windows case
     """
     sleep(30)
     agent = ctx.provider_context['cloudify']['cloudify_agent']
@@ -353,17 +355,34 @@ def _get_device_name():
     devices = devices.split('\r\n')
     devices.pop(0)
 
-    ctx.logger.info('Available on {}: {}'.format(env.host_string, devices))
+    root_device = devices[0]
+    devices.pop(0)
+
+    ctx.logger.info('Available on {}: {}. Root device: {}'.format(
+                                                env.host_string, 
+                                                devices, 
+                                                root_device)
+                    )
 
     aws_device = ctx.source.instance.runtime_properties['device']
 
-    for device in devices:
-        if device[-1:] == aws_device[-1:]:
-            ctx.logger.info('{} matches {}.'.format(aws_device, device))
-            return '/dev/{}'.format(device)
+    # if the root device is /dev/xvda or /dev/hda: common unix system
+    if ('xvda' in root_device) or ('hda' in root_device):
+        return _match_aws_device_name(aws_device[-1:], devices)
+    # if the root device is /dev/xvde: RHEL or centos system
+    elif 'xvde' in root_device:
+        return _match_aws_device_name(chr(ord(aws_device[-1:]) + 4), devices)
 
     raise NonRecoverableError(
         'Unable to match {} with an existing device on the machine.'.format(
                                                                     aws_device
                                                                     )
         )
+
+
+def _match_aws_device_name(aws_device, devices):
+    for device in devices:
+        if device[-1:] == aws_device:
+            matched_dev = '/dev/{}'.format(device)
+            ctx.logger.info('{} matches {}.'.format(aws_device, matched_dev))
+            return matched_dev
